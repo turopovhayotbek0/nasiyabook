@@ -29,7 +29,6 @@ export default function Dashboard() {
     return "active";
   }
 
-  const activeDebts = data.debts.filter((d) => getStatus(d) !== "closed");
   const overdueDebts = data.debts.filter((d) => getStatus(d) === "overdue");
   const todayDebts = data.debts.filter(
     (d) => d.dueDate === today() && getStatus(d) !== "closed",
@@ -38,10 +37,6 @@ export default function Dashboard() {
 
   const totalGiven = data.debts
     .filter((d) => d.type === "given" && getStatus(d) !== "closed")
-    .reduce((sum, d) => sum + getDebtRemaining(d), 0);
-
-  const totalTaken = data.debts
-    .filter((d) => d.type === "taken" && getStatus(d) !== "closed")
     .reduce((sum, d) => sum + getDebtRemaining(d), 0);
 
   const recentDebts = [...data.debts]

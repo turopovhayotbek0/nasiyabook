@@ -19,9 +19,10 @@ export default function Navbar({ current, onChange }) {
     <div className="sidebar" style={styles.sidebar}>
       <div className="logo" style={styles.logo}>
         <span className="mainLogo" style={styles.mainLogo}>
-          <img src={logo} alt="logo" />CashDesk
+          <img src={logo} alt="logo" />
+          CashDesk
         </span>
-        <span style={styles.logoSub}>Shaxsiy CRM</span>
+        <span style={styles.logoSub}>{t.personalCRM}</span>
       </div>
       {pages.map((p) => (
         <div

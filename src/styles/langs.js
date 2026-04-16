@@ -1,6 +1,6 @@
 export const langs = {
   uz: {
-    // Navigatsiya va umumiy
+    personalCRM: "Shaxsiy CRM",
     dashboard: "Dashboard - qarzlar",
     contacts: "Kontaktlar",
     debts: "Qarzlar",
@@ -22,7 +22,6 @@ export const langs = {
     currency: "so'm",
     currencyName: "so'm",
 
-    // Kontaktlar
     addContact: "+ Kontakt qo'shish",
     newContact: "Yangi kontakt",
     name: "Ism",
@@ -32,7 +31,6 @@ export const langs = {
     noContacts: "Hali kontakt yo'q. Birinchisini qo'shing!",
     contactsCount: "Kontaktlar",
 
-    // Qarzlar
     addDebt: "+ Qarz qo'shish",
     newDebt: "Yangi qarz",
     selectContact: "Kontakt tanlang...",
@@ -60,7 +58,6 @@ export const langs = {
     debtStatus: "Qarz holati",
     topDebtors: "Eng ko'p qarz bo'lganlar",
 
-    // To'lovlar
     addPayment: "To'lov qo'shish",
     newPayment: "Yangi to'lov",
     dailyPayment: "Kundalik to'lov",
@@ -89,7 +86,6 @@ export const langs = {
     totalGiven: "Jami berilgan",
     totalTaken: "Jami olingan",
 
-    // Vazifalar (To-do)
     addTask: "+ Vazifa qo'shish",
     newTask: "Yangi vazifa",
     taskTitle: "Vazifa nomi",
@@ -112,10 +108,10 @@ export const langs = {
     meeting: "Uchrashuv",
     payment: "To'lov",
 
-    // Hisobotlar
     csvExport: "CSV Eksport",
   },
   ru: {
+    personalCRM: "Персональная CRM",
     dashboard: "Главная - долги",
     contacts: "Контакты",
     debts: "Долги",
@@ -226,6 +222,7 @@ export const langs = {
     csvExport: "Экспорт CSV",
   },
   en: {
+    personalCRM: "Personal CRM",
     dashboard: "Dashboard - debts",
     contacts: "Contacts",
     debts: "Debts",

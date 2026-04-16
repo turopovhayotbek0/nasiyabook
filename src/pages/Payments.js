@@ -5,7 +5,6 @@ import { useLang } from "../context/LangContext";
 
 export default function Payments() {
   const { data, addPayment } = useApp();
-  const { monthlyIn } = useApp();
   const { t } = useLang();
   const [showForm, setShowForm] = useState(false);
   const [isDailyPayment, setIsDailyPayment] = useState(false);

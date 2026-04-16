@@ -4,7 +4,6 @@ import { colors } from "../styles/colors";
 import { useLang } from "../context/LangContext";
 
 export default function Debts() {
-  const { monthlyIn } = useApp();
   const { data, addDebt, deleteItem, updateItem } = useApp();
   const { t } = useLang();
   const [showForm, setShowForm] = useState(false);

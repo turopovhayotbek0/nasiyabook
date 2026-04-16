@@ -4,7 +4,6 @@ import { colors } from "../styles/colors";
 import { useLang } from "../context/LangContext";
 
 export default function Tasks() {
-  const { monthlyIn } = useApp();
   const { data, addTask, deleteItem, updateItem } = useApp();
   const { t: lang } = useLang();
   const [showForm, setShowForm] = useState(false);

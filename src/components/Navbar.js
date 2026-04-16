@@ -19,7 +19,7 @@ export default function Navbar({ current, onChange }) {
     <div className="sidebar" style={styles.sidebar}>
       <div className="logo" style={styles.logo}>
         <span className="mainLogo" style={styles.mainLogo}>
-          <img src={logo} alt="logo" /> NasiyaBook
+          <img src={logo} alt="logo" />CashDesk
         </span>
         <span style={styles.logoSub}>Shaxsiy CRM</span>
       </div>
@@ -64,7 +64,7 @@ const styles = {
     display: "flex",
     color: colors.primaryColor,
     fontWeight: "bold",
-    gap: "20px",
+    gap: "10px",
   },
   logoText: { fontSize: "18px", fontWeight: "700", color: "#fff" },
   logoSub: {

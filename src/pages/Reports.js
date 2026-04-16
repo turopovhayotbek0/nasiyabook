@@ -4,27 +4,29 @@ import { colors } from "../styles/colors";
 import { useLang } from "../context/LangContext";
 
 export default function Reports() {
-  const { data } = useApp();
+  const { data, monthlyIn, monthlyOut } = useApp();
   const { t } = useLang();
 
-  function fmt(n) {
-    return new Intl.NumberFormat("uz-UZ").format(n);
-  }
+  // Raqamlarni o'zbek formatida chiqarish (1 000 000)
+  const fmt = (n) => new Intl.NumberFormat("uz-UZ").format(n);
 
-  function getRemaining(debt) {
+  // Qolgan qarzni hisoblash
+  const getRemaining = (debt) => {
     const paid = data.payments
       .filter((p) => p.debtId === debt.id)
       .reduce((s, p) => s + Number(p.amount), 0);
     return Math.max(0, Number(debt.amount) - paid);
-  }
+  };
 
-  function getStatus(debt) {
+  // Qarz statusini aniqlash
+  const getStatus = (debt) => {
     const today = new Date().toISOString().split("T")[0];
     if (getRemaining(debt) === 0) return "closed";
     if (debt.dueDate && debt.dueDate < today) return "overdue";
     return "active";
-  }
+  };
 
+  // Umumiy hisob-kitoblar
   const totalGiven = data.debts
     .filter((d) => d.type === "given")
     .reduce((s, d) => s + Number(d.amount), 0);
@@ -33,10 +35,18 @@ export default function Reports() {
     .reduce((s, d) => s + Number(d.amount), 0);
   const totalPaid = data.payments.reduce((s, p) => s + Number(p.amount), 0);
 
-  const active = data.debts.filter((d) => getStatus(d) === "active").length;
-  const overdue = data.debts.filter((d) => getStatus(d) === "overdue").length;
-  const closed = data.debts.filter((d) => getStatus(d) === "closed").length;
+  // Status bo'yicha sonlar
+  const activeCount = data.debts.filter(
+    (d) => getStatus(d) === "active",
+  ).length;
+  const overdueCount = data.debts.filter(
+    (d) => getStatus(d) === "overdue",
+  ).length;
+  const closedCount = data.debts.filter(
+    (d) => getStatus(d) === "closed",
+  ).length;
 
+  // Eng ko'p qarzdorlar (Top 5)
   const byContact = {};
   data.debts
     .filter((d) => d.type === "given")
@@ -48,8 +58,8 @@ export default function Reports() {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
 
-  // CSV Eksport funksiyasini tarjimaga moslashtiramiz
-  function exportCSV() {
+  // CSV Eksport funksiyasi
+  const exportCSV = () => {
     const rows = [
       [
         t.colName,
@@ -67,18 +77,21 @@ export default function Reports() {
         getRemaining(d),
         d.date,
         d.dueDate || "",
-        t[getStatus(d)], // getStatus "active", "closed" va hk qaytaradi
+        t[getStatus(d)],
       ]),
     ];
     const csv = rows.map((r) => r.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
-    a.download = `nasiyabook_report_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.href = url;
+    a.download = `hisobot_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
-  }
+  };
 
   return (
-    <div>
+    <div style={styles.container}>
+      {/* Sarlavha qismi */}
       <div style={styles.header}>
         <h2 style={styles.title}>{t.reports}</h2>
         <button style={styles.btnPrimary} onClick={exportCSV}>
@@ -86,6 +99,35 @@ export default function Reports() {
         </button>
       </div>
 
+      {/* 1-QATOR: Oylik Kirim va Chiqim (Emoji olib tashlandi) */}
+      <div style={styles.monthlyGrid}>
+        <div
+          style={{
+            ...styles.metricCard,
+            borderLeft: `6px solid ${colors.primaryColor}`,
+          }}
+        >
+          <div style={styles.label}>{t.monthlyIn || "Oylik Kirim"}</div>
+          <div style={{ ...styles.value, color: colors.primaryColor }}>
+            +{fmt(monthlyIn)}
+          </div>
+          <div style={styles.sub}>{t.currencyName} (Joriy oy)</div>
+        </div>
+        <div
+          style={{
+            ...styles.metricCard,
+            borderLeft: `6px solid ${colors.redhead}`,
+          }}
+        >
+          <div style={styles.label}>{t.monthlyOut || "Oylik Chiqim"}</div>
+          <div style={{ ...styles.value, color: colors.redhead }}>
+            -{fmt(monthlyOut)}
+          </div>
+          <div style={styles.sub}>{t.currencyName} (Joriy oy)</div>
+        </div>
+      </div>
+
+      {/* 2-QATOR: Umumiy statistika */}
       <div style={styles.grid4}>
         <div style={styles.metricCard}>
           <div style={styles.label}>{t.totalGiven}</div>
@@ -115,25 +157,26 @@ export default function Reports() {
         </div>
       </div>
 
+      {/* 3-QATOR: Qarz holati va Eng ko'p qarzdorlar */}
       <div style={styles.grid2}>
         <div style={styles.card}>
           <div style={styles.cardTitle}>{t.debtStatus}</div>
           <div style={styles.statRow}>
             <span>{t.active}</span>
             <span style={{ color: colors.blue, fontWeight: 600 }}>
-              {active} {t.itemsCount}
+              {activeCount} ta
             </span>
           </div>
           <div style={styles.statRow}>
             <span>{t.overdue}</span>
-            <span style={{ color: colors.red, fontWeight: 600 }}>
-              {overdue} {t.itemsCount}
+            <span style={{ color: colors.redhead, fontWeight: 600 }}>
+              {overdueCount} ta
             </span>
           </div>
           <div style={styles.statRow}>
             <span>{t.closed}</span>
             <span style={{ color: colors.primaryColor, fontWeight: 600 }}>
-              {closed} {t.itemsCount}
+              {closedCount} ta
             </span>
           </div>
         </div>
@@ -159,6 +202,7 @@ export default function Reports() {
 }
 
 const styles = {
+  container: { paddingBottom: "20px" },
   header: {
     display: "flex",
     justifyContent: "space-between",
@@ -166,54 +210,68 @@ const styles = {
     marginBottom: "1.5rem",
   },
   title: { fontSize: "22px", fontWeight: 600 },
+  monthlyGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "1rem",
+    marginBottom: "1rem",
+  },
   grid4: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
     gap: "1rem",
     marginBottom: "1.5rem",
   },
-  grid2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" },
+  grid2: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+    gap: "1rem",
+  },
   metricCard: {
     background: "white",
-    borderRadius: "10px",
+    borderRadius: "12px",
     padding: "1.25rem",
-    border: `1px solid ${colors.textColor}`,
+    boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+    border: "1px solid #eee",
   },
-  label: { fontSize: "12px", color: colors.textColor, marginBottom: "8px" },
-  value: { fontSize: "24px", fontWeight: 600 },
-  sub: { fontSize: "11px", color: colors.textColor, marginTop: "4px" },
+  label: {
+    fontSize: "14px",
+    color: "#666",
+    fontWeight: "500",
+    marginBottom: "8px",
+  },
+  value: { fontSize: "22px", fontWeight: 700 },
+  sub: { fontSize: "11px", color: "#999", marginTop: "4px" },
   card: {
     background: "white",
-    borderRadius: "10px",
+    borderRadius: "12px",
     padding: "1.25rem",
-    border: `1px solid ${colors.textColor}`,
+    border: "1px solid #eee",
   },
   cardTitle: {
-    fontSize: "14px",
+    fontSize: "15px",
     fontWeight: 600,
     marginBottom: "1rem",
-    paddingBottom: ".75rem",
-    borderBottom: `1px solid ${colors.textColor}`,
+    color: "#333",
   },
   statRow: {
     display: "flex",
     justifyContent: "space-between",
-    padding: "8px 0",
-    borderBottom: `1px solid ${colors.textColor}`,
-    fontSize: "13px",
+    padding: "10px 0",
+    borderBottom: "1px solid #f9f9f9",
+    fontSize: "14px",
   },
   btnPrimary: {
     padding: "8px 16px",
     background: colors.primaryColor,
     color: "white",
     border: "none",
-    borderRadius: "6px",
+    borderRadius: "8px",
     cursor: "pointer",
-    fontSize: "13px",
     fontWeight: 500,
   },
   empty: {
-    color: colors.textColor,
+    color: "#999",
     fontSize: "13px",
     textAlign: "center",
     padding: "1rem",

@@ -4,10 +4,13 @@ import { colors } from "../styles/colors";
 import { useLang } from "../context/LangContext";
 
 export default function Debts() {
+  const { monthlyIn } = useApp();
   const { data, addDebt, deleteItem, updateItem } = useApp();
   const { t } = useLang();
   const [showForm, setShowForm] = useState(false);
   const [filter, setFilter] = useState("all");
+  const [editId, setEditId] = useState(null);
+  const [editForm, setEditForm] = useState(null);
   const [form, setForm] = useState({
     contactId: "",
     type: "given",
@@ -47,6 +50,34 @@ export default function Debts() {
       status: "active",
     });
     setShowForm(false);
+  }
+
+  function handleEdit(debt) {
+    setEditId(debt.id);
+    setEditForm({
+      contactId: debt.contactId || "",
+      type: debt.type,
+      amount: debt.amount,
+      currency: debt.currency,
+      date: debt.date,
+      dueDate: debt.dueDate || "",
+      comment: debt.comment || "",
+      status: debt.status,
+    });
+    setShowForm(false);
+  }
+
+  function handleEditSave() {
+    if (!editForm.amount) return alert(t.enterAmountAlert);
+    const contact = data.contacts.find((c) => c.id === editForm.contactId);
+    const existingDebt = data.debts.find((d) => d.id === editId);
+    updateItem("debts", editId, {
+      ...editForm,
+      amount: Number(editForm.amount),
+      contactName: contact ? contact.name : existingDebt.contactName,
+    });
+    setEditId(null);
+    setEditForm(null);
   }
 
   function getStatus(debt) {
@@ -92,7 +123,14 @@ export default function Debts() {
     <div className="debtsPluse" style={styles.debtsPluse}>
       <div style={styles.header}>
         <h2 style={styles.title}>{t.debts}</h2>
-        <button style={styles.btnPrimary} onClick={() => setShowForm(true)}>
+        <button
+          style={styles.btnPrimary}
+          onClick={() => {
+            setShowForm(true);
+            setEditId(null);
+            setEditForm(null);
+          }}
+        >
           {t.addDebt}
         </button>
       </div>
@@ -104,7 +142,7 @@ export default function Debts() {
             <p style={{ color: "#c0392b" }}>{t.firstAddContact}</p>
           ) : (
             <>
-              <div style={styles.formGrid}>
+              <div className="form-grid" style={styles.formGrid}>
                 <div>
                   <label style={styles.label}>{t.colPerson}*</label>
                   <select
@@ -134,7 +172,7 @@ export default function Debts() {
                   </select>
                 </div>
                 <div>
-                  <label style={styles.label}> {t.amount}*</label>
+                  <label style={styles.label}>{t.amount}*</label>
                   <input
                     style={styles.input}
                     type="number"
@@ -204,6 +242,114 @@ export default function Debts() {
         </div>
       )}
 
+      {editId && editForm && (
+        <div style={styles.formCard}>
+          <h3 style={styles.formTitle}>{t.editDebt || "Qarzni tahrirlash"}</h3>
+          <div className="form-grid" style={styles.formGrid}>
+            <div>
+              <label style={styles.label}>{t.colPerson}</label>
+              <select
+                style={styles.input}
+                value={editForm.contactId}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, contactId: e.target.value })
+                }
+              >
+                <option value="">{t.selectContact}</option>
+                {data.contacts.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label style={styles.label}>{t.debtType}</label>
+              <select
+                style={styles.input}
+                value={editForm.type}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, type: e.target.value })
+                }
+              >
+                <option value="given">{t.menBerdim}</option>
+                <option value="taken">{t.mengaBerishdi}</option>
+              </select>
+            </div>
+            <div>
+              <label style={styles.label}>{t.amount}*</label>
+              <input
+                style={styles.input}
+                type="number"
+                value={editForm.amount}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, amount: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label style={styles.label}>{t.currencyVallyuta}</label>
+              <select
+                style={styles.input}
+                value={editForm.currency}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, currency: e.target.value })
+                }
+              >
+                <option value="UZS">UZS</option>
+                <option value="USD">USD</option>
+              </select>
+            </div>
+            <div>
+              <label style={styles.label}>{t.givenDate}</label>
+              <input
+                style={styles.input}
+                type="date"
+                value={editForm.date}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, date: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label style={styles.label}>{t.returnDate}</label>
+              <input
+                style={styles.input}
+                type="date"
+                value={editForm.dueDate}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, dueDate: e.target.value })
+                }
+              />
+            </div>
+            <div style={{ gridColumn: "span 2" }}>
+              <label style={styles.label}>{t.note}</label>
+              <input
+                style={styles.input}
+                value={editForm.comment}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, comment: e.target.value })
+                }
+              />
+            </div>
+          </div>
+          <div style={styles.formFooter}>
+            <button
+              style={styles.btnSecondary}
+              onClick={() => {
+                setEditId(null);
+                setEditForm(null);
+              }}
+            >
+              {t.cancel}
+            </button>
+            <button style={styles.btnPrimary} onClick={handleEditSave}>
+              {t.save}
+            </button>
+          </div>
+        </div>
+      )}
+
       <div style={styles.filterBar}>
         {["all", "active", "overdue", "closed", "given", "taken"].map((f) => (
           <button
@@ -214,7 +360,6 @@ export default function Debts() {
               ...(filter === f ? styles.filterActive : {}),
             }}
           >
-            {/* f o'zgaruvchisi 'all', 'active' bo'lib keladi, t[f] esa uni tarjimasini oladi */}
             {t[f]}
           </button>
         ))}
@@ -229,13 +374,13 @@ export default function Debts() {
               <table style={styles.table}>
                 <thead>
                   <tr>
-                    <th style={styles.th}>{t.all}</th>
-                    <th style={styles.th}>{t.active}</th>
-                    <th style={styles.th}>{t.overdue}</th>
-                    <th style={styles.th}>{t.closed}</th>
-                    <th style={styles.th}>{t.menBerdim}</th>
+                    <th style={styles.th}>{t.colPerson}</th>
+                    <th style={styles.th}>{t.debtType}</th>
+                    <th style={styles.th}>{t.amount}</th>
+                    <th style={styles.th}>{t.givenDate}</th>
+                    <th style={styles.th}>{t.returnDate}</th>
                     <th style={styles.th}>Status</th>
-                    <th style={styles.th}>{t.mengaBerishdi}</th>
+                    <th style={styles.th}>{t.note}</th>
                     <th style={styles.th}></th>
                   </tr>
                 </thead>
@@ -270,6 +415,12 @@ export default function Debts() {
                       <td style={styles.td}>{d.comment || "—"}</td>
                       <td style={styles.td}>
                         <div style={{ display: "flex", gap: "6px" }}>
+                          <button
+                            style={styles.btnEdit}
+                            onClick={() => handleEdit(d)}
+                          >
+                            {t.edit}
+                          </button>
                           {getStatus(d) !== "closed" && (
                             <button
                               style={styles.btnClose}
@@ -293,6 +444,7 @@ export default function Debts() {
                 </tbody>
               </table>
             </div>
+
             <div className="mobile-only">
               {debts.map((d) => (
                 <div
@@ -327,8 +479,7 @@ export default function Debts() {
                   >
                     {statusBadge(getStatus(d))}
                     <span style={{ fontSize: "12px", color: colors.textColor }}>
-                      {t.colDueDate}
-                      {d.dueDate || "—"}
+                      {t.colDueDate} {d.dueDate || "—"}
                     </span>
                   </div>
                   <div
@@ -338,6 +489,12 @@ export default function Debts() {
                       justifyContent: "flex-end",
                     }}
                   >
+                    <button
+                      style={styles.btnEdit}
+                      onClick={() => handleEdit(d)}
+                    >
+                      {t.edit}
+                    </button>
                     {getStatus(d) !== "closed" && (
                       <button
                         style={styles.btnClose}
@@ -379,7 +536,6 @@ const styles = {
     padding: "1.25rem",
     border: `1px solid ${colors.textColor}`,
   },
-
   formCard: { marginBottom: "20px" },
   formTitle: { fontSize: "16px", fontWeight: 600, marginBottom: "1rem" },
   formGrid: {
@@ -406,7 +562,6 @@ const styles = {
     boxSizing: "border-box",
   },
   table: { width: "100%", borderCollapse: "collapse" },
-
   th: {
     textAlign: "left",
     padding: "4px 6px",
@@ -457,6 +612,15 @@ const styles = {
     borderRadius: "6px",
     cursor: "pointer",
     fontSize: "13px",
+  },
+  btnEdit: {
+    padding: "4px 10px",
+    background: colors.iconBg,
+    color: colors.blue,
+    border: `1px solid ${colors.blue}`,
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontSize: "12px",
   },
   btnDanger: {
     padding: "4px 10px",

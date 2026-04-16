@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useMemo } from "react";
 
 const AppContext = createContext();
 
@@ -19,6 +19,39 @@ export function AppProvider({ children }) {
     setData(newData);
     localStorage.setItem("nasiyabook", JSON.stringify(newData));
   }
+
+  // --- Oylik Hisob-kitob Mantiqi ---
+  const { monthlyIn, monthlyOut } = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const mIn = data.payments
+      .filter((p) => {
+        const pDate = new Date(p.date);
+        const debt = data.debts.find((d) => d.id === p.debtId);
+        return (
+          pDate.getMonth() === currentMonth &&
+          pDate.getFullYear() === currentYear &&
+          debt?.type === "given"
+        );
+      })
+      .reduce((s, p) => s + Number(p.amount), 0);
+
+    const mOut = data.payments
+      .filter((p) => {
+        const pDate = new Date(p.date);
+        const debt = data.debts.find((d) => d.id === p.debtId);
+        return (
+          pDate.getMonth() === currentMonth &&
+          pDate.getFullYear() === currentYear &&
+          debt?.type === "taken"
+        );
+      })
+      .reduce((s, p) => s + Number(p.amount), 0);
+
+    return { monthlyIn: mIn, monthlyOut: mOut };
+  }, [data]);
 
   function addContact(contact) {
     const newContact = { ...contact, id: Date.now().toString() };
@@ -72,6 +105,8 @@ export function AppProvider({ children }) {
     <AppContext.Provider
       value={{
         data,
+        monthlyIn, 
+        monthlyOut,
         addContact,
         addDebt,
         addTask,

@@ -4,15 +4,44 @@ import { colors } from "../styles/colors";
 import { useLang } from "../context/LangContext";
 
 export default function Contacts() {
-  const { data, addContact, deleteItem } = useApp();
+  const { data, addContact, deleteItem, updateItem } = useApp();
   const { t } = useLang();
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: "", phone: "", tg: "", note: "" });
+  const [editId, setEditId] = useState(null);
+  const [form, setForm] = useState({
+    name: "",
+    phone: "+998",
+    tg: "@",
+    note: "",
+  });
 
   function handleSave() {
     if (!form.name.trim()) return alert(t.nameRequired);
-    addContact(form);
-    setForm({ name: "", phone: "", tg: "", note: "" });
+    if (editId) {
+      updateItem("contacts", editId, form);
+      setEditId(null);
+    } else {
+      addContact(form);
+    }
+    setForm({ name: "", phone: "+998", tg: "@", note: "" });
+    setShowForm(false);
+  }
+
+  function handleEdit(c) {
+    setForm({
+      name: c.name,
+      phone: c.phone || "+998",
+      tg: c.tg || "@",
+      note: c.note || "",
+    });
+    setEditId(c.id);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function handleCancel() {
+    setForm({ name: "", phone: "+998", tg: "@", note: "" });
+    setEditId(null);
     setShowForm(false);
   }
 
@@ -25,18 +54,39 @@ export default function Contacts() {
       .slice(0, 2);
   }
 
+  function handlePhoneChange(e) {
+    let value = e.target.value.replace(/\D/g, "");
+    if (!value.startsWith("998")) value = "998" + value;
+    const raw = value;
+    let formatted = "+998 ";
+    if (value.length > 3) formatted += value.slice(3, 5);
+    if (value.length >= 6) formatted += " " + value.slice(5, 8);
+    if (value.length >= 9) formatted += " " + value.slice(8, 10);
+    if (value.length >= 11) formatted += " " + value.slice(10, 12);
+    setForm({ ...form, phone: formatted, phoneRaw: raw });
+  }
+
   return (
     <div>
       <div style={styles.header}>
         <h2 style={styles.title}>{t.contacts}</h2>
-        <button style={styles.btnPrimary} onClick={() => setShowForm(true)}>
+        <button
+          style={styles.btnPrimary}
+          onClick={() => {
+            setEditId(null);
+            setForm({ name: "", phone: "+998", tg: "@", note: "" });
+            setShowForm(true);
+          }}
+        >
           {t.addContact}
         </button>
       </div>
 
       {showForm && (
         <div style={styles.formCard}>
-          <h3 style={styles.formTitle}>{t.newContact}</h3>
+          <h3 style={styles.formTitle}>
+            {editId ? t.editContact || "Kontaktni tahrirlash" : t.newContact}
+          </h3>
           <div className="form-grid" style={styles.formGrid}>
             <div>
               <label style={styles.label}>{t.name}*</label>
@@ -50,9 +100,10 @@ export default function Contacts() {
               <label style={styles.label}>{t.phone}</label>
               <input
                 style={styles.input}
+                type="text"
                 value={form.phone}
-                placeholder="+998901234567"
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                placeholder="+998 90 123 45 67"
+                onChange={handlePhoneChange}
               />
             </div>
             <div>
@@ -65,7 +116,7 @@ export default function Contacts() {
               />
             </div>
             <div>
-              <label style={styles.label}>{t.note} </label>
+              <label style={styles.label}>{t.note}</label>
               <input
                 style={styles.input}
                 value={form.note}
@@ -74,14 +125,11 @@ export default function Contacts() {
             </div>
           </div>
           <div style={styles.formFooter}>
-            <button
-              style={styles.btnSecondary}
-              onClick={() => setShowForm(false)}
-            >
+            <button style={styles.btnSecondary} onClick={handleCancel}>
               {t.cancel}
             </button>
             <button style={styles.btnPrimary} onClick={handleSave}>
-              {t.save}
+              {editId ? t.save : t.save}
             </button>
           </div>
         </div>
@@ -91,88 +139,96 @@ export default function Contacts() {
         {data.contacts.length === 0 ? (
           <p style={styles.empty}>{t.noContacts}</p>
         ) : (
-          <div style={styles.card}>
-            {data.contacts.length === 0 ? (
-              <p style={styles.empty}>{t.noContacts}</p>
-            ) : (
-              <>
-                {/* Desktop table */}
-                <div className="desktop-only">
-                  <table style={styles.table}>
-                    <thead>
-                      <tr>
-                        <th style={styles.th}>{t.name}</th>
-                        <th style={styles.th}>{t.phone}</th>
-                        <th style={styles.th}>{t.telegram}</th>
-                        <th style={styles.th}>{t.note}</th>
-                        <th style={styles.th}></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {data.contacts.map((c) => (
-                        <tr key={c.id}>
-                          <td style={styles.td}>
-                            <div style={styles.contactRow}>
-                              <div style={styles.avatar}>
-                                {getInitials(c.name)}
-                              </div>
-                              <span style={{ fontWeight: 500 }}>{c.name}</span>
-                            </div>
-                          </td>
-                          <td style={styles.td}>{c.phone || "—"}</td>
-                          <td style={styles.td}>{c.tg || "—"}</td>
-                          <td style={styles.td}>{c.note || "—"}</td>
-                          <td style={styles.td}>
-                            <button
-                              style={styles.btnDanger}
-                              onClick={() => deleteItem("contacts", c.id)}
-                            >
-                              {t.delete}
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Mobile cards */}
-                <div className="mobile-only">
+          <>
+            {/* Desktop table */}
+            <div className="desktop-only">
+              <table style={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={styles.th}>{t.name}</th>
+                    <th style={styles.th}>{t.phone}</th>
+                    <th style={styles.th}>{t.telegram}</th>
+                    <th style={styles.th}>{t.note}</th>
+                    <th style={styles.th}></th>
+                  </tr>
+                </thead>
+                <tbody>
                   {data.contacts.map((c) => (
-                    <div key={c.id} style={styles.mobileCard}>
-                      <div style={styles.mobileTop}>
+                    <tr key={c.id}>
+                      <td style={styles.td}>
                         <div style={styles.contactRow}>
                           <div style={styles.avatar}>{getInitials(c.name)}</div>
-                          <div>
-                            <div style={{ fontWeight: 600, fontSize: "14px" }}>
-                              {c.name}
-                            </div>
-                            <div style={{ fontSize: "12px", color: "#888" }}>
-                              {c.phone || "—"}
-                            </div>
-                          </div>
+                          <span style={{ fontWeight: 500 }}>{c.name}</span>
                         </div>
-                        <button
-                          style={styles.btnDanger}
-                          onClick={() => deleteItem("contacts", c.id)}
-                        >
-                          O'chir
-                        </button>
-                      </div>
-                      <div style={styles.mobileRow}>
-                        <span style={styles.mobileLabel}>{t.telegram}</span>
-                        <span>{c.tg || "—"}</span>
-                      </div>
-                      <div style={styles.mobileRow}>
-                        <span style={styles.mobileLabel}>{t.note}</span>
-                        <span>{c.note || "—"}</span>
+                      </td>
+                      <td style={styles.td}>{c.phone || "—"}</td>
+                      <td style={styles.td}>{c.tg || "—"}</td>
+                      <td style={styles.td}>{c.note || "—"}</td>
+                      <td style={styles.td}>
+                        <div style={{ display: "flex", gap: "6px" }}>
+                          <button
+                            style={styles.btnEdit}
+                            onClick={() => handleEdit(c)}
+                          >
+                            {t.edit}
+                          </button>
+                          <button
+                            style={styles.btnDanger}
+                            onClick={() => deleteItem("contacts", c.id)}
+                          >
+                            {t.delete}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="mobile-only">
+              {data.contacts.map((c) => (
+                <div key={c.id} style={styles.mobileCard}>
+                  <div style={styles.mobileTop}>
+                    <div style={styles.contactRow}>
+                      <div style={styles.avatar}>{getInitials(c.name)}</div>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: "14px" }}>
+                          {c.name}
+                        </div>
+                        <div style={{ fontSize: "12px", color: "#888" }}>
+                          {c.phone || "—"}
+                        </div>
                       </div>
                     </div>
-                  ))}
+                    <div style={{ display: "flex", gap: "6px" }}>
+                      <button
+                        style={styles.btnEdit}
+                        onClick={() => handleEdit(c)}
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        style={styles.btnDanger}
+                        onClick={() => deleteItem("contacts", c.id)}
+                      >
+                        {t.delete}
+                      </button>
+                    </div>
+                  </div>
+                  <div style={styles.mobileRow}>
+                    <span style={styles.mobileLabel}>{t.telegram}</span>
+                    <span>{c.tg || "—"}</span>
+                  </div>
+                  <div style={styles.mobileRow}>
+                    <span style={styles.mobileLabel}>{t.note}</span>
+                    <span>{c.note || "—"}</span>
+                  </div>
                 </div>
-              </>
-            )}
-          </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>
@@ -268,12 +324,21 @@ const styles = {
   },
   btnSecondary: {
     padding: "8px 16px",
-    background: colors.iconBg,
-    color: colors.textColor,
+    background: "white",
+    color: "black",
     border: `1px solid ${colors.textColor}`,
     borderRadius: "6px",
     cursor: "pointer",
     fontSize: "13px",
+  },
+  btnEdit: {
+    padding: "4px 10px",
+    background: colors.iconBg,
+    color: colors.blue,
+    border: "1px solid #c0d8f5",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontSize: "12px",
   },
   btnDanger: {
     padding: "4px 10px",

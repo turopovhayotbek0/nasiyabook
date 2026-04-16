@@ -7,11 +7,11 @@ export default function Navbar({ current, onChange }) {
   const { t } = useLang();
 
   const pages = [
-    { id: "dashboard", label: t.dashboard, icon: "fa-solid fa-chart-column" },
     { id: "contacts", label: t.contacts, icon: "fa-solid fa-user-group" },
     { id: "debts", label: t.debts, icon: "fa-solid fa-hand-holding-dollar" },
-    { id: "tasks", label: t.tasks, icon: "fa-solid fa-list-check" },
     { id: "payments", label: t.payments, icon: "fa-solid fa-money-bill-wave" },
+    { id: "tasks", label: t.tasks, icon: "fa-solid fa-list-check" },
+    { id: "dashboard", label: t.dashboard, icon: "fa-solid fa-chart-column" },
     { id: "reports", label: t.reports, icon: "fa-solid fa-chart-pie" },
   ];
 

@@ -9,22 +9,23 @@ import Payments from "./pages/Payments";
 import Reports from "./pages/Reports";
 
 export default function App() {
-  const [page, setPage] = useState("dashboard");
+  const [page, setPage] = useState("contacts");
 
   function renderPage() {
     switch (page) {
-      case "dashboard":
-        return <Dashboard />;
       case "contacts":
         return <Contacts />;
       case "debts":
         return <Debts />;
-      case "tasks":
-        return <Tasks />;
       case "payments":
         return <Payments />;
+      case "tasks":
+        return <Tasks />;
+      case "dashboard":
+        return <Dashboard />;
       case "reports":
         return <Reports />;
+
       default:
         return (
           <div>
@@ -37,7 +38,11 @@ export default function App() {
   return (
     <div
       className="app-layout"
-      style={{ display: "flex", minHeight: "100vh", background: "#f0f2f5" }}
+      style={{
+        display: "flex",
+        minHeight: "100vh",
+        background: "rgba(74, 222, 128, 0.05)",
+      }}
     >
       <Navbar current={page} onChange={setPage} />
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>

@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useApp } from "../context/AppContext";
 import { colors } from "../styles/colors";
 import { useLang } from "../context/LangContext";
 
 export default function Tasks() {
+  const { monthlyIn } = useApp();
   const { data, addTask, deleteItem, updateItem } = useApp();
-  const { t } = useLang();
+  const { t: lang } = useLang();
   const [showForm, setShowForm] = useState(false);
   const [filter, setFilter] = useState("all");
   const [form, setForm] = useState({
@@ -14,15 +15,19 @@ export default function Tasks() {
     priority: "medium",
     status: "pending",
     debtId: "",
+    category: "general",
   });
+
+  const selectedDebt = useMemo(() => {
+    return data.debts.find((d) => d.id === form.debtId);
+  }, [form.debtId, data.debts]);
 
   function today() {
     return new Date().toISOString().split("T")[0];
   }
 
   function handleSave() {
-    if (!form.title.trim()) return alert("Vazifa nomini kiriting");
-    if (!form.title.trim()) return alert(t.enterTaskTitle);
+    if (!form.title.trim()) return alert(lang.enterTaskTitle);
     addTask(form);
     setForm({
       title: "",
@@ -30,6 +35,7 @@ export default function Tasks() {
       priority: "medium",
       status: "pending",
       debtId: "",
+      category: "general",
     });
     setShowForm(false);
   }
@@ -53,9 +59,13 @@ export default function Tasks() {
 
   function priorityInfo(p) {
     const map = {
-      high: { label: t.high, color: "#c0392b", bg: "#FCEBEB" }, // 4. Status tarjimasi
-      medium: { label: t.medium, color: colors.blue, bg: colors.iconBg },
-      low: { label: t.low, color: colors.primaryColor, bg: colors.primaryBg },
+      high: { label: lang.high, color: "#c0392b", bg: "#FCEBEB" },
+      medium: { label: lang.medium, color: colors.blue, bg: colors.iconBg },
+      low: {
+        label: lang.low,
+        color: colors.primaryColor,
+        bg: colors.primaryBg,
+      },
     };
     return map[p];
   }
@@ -71,26 +81,27 @@ export default function Tasks() {
   return (
     <div>
       <div style={styles.header}>
-        <h2 style={styles.title}>Vazifalar</h2>
+        <h2 style={styles.title}>{lang.task}</h2>
         <button style={styles.btnPrimary} onClick={() => setShowForm(true)}>
-          {t.addTask}
+          {lang.addTask}
         </button>
       </div>
 
       {showForm && (
         <div style={styles.formCard}>
-          <h3 style={styles.formTitle}>{t.newTask}</h3>
+          <h3 style={styles.formTitle}>{lang.newTask}</h3>
           <div style={styles.formGrid}>
             <div style={{ gridColumn: "span 2" }}>
-              <label style={styles.label}>{t.taskTitle} *</label>
+              <label style={styles.label}>{lang.taskTitle} *</label>
               <input
                 style={styles.input}
+                placeholder=""
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
               />
             </div>
             <div>
-              <label style={styles.label}>{t.colDate}</label>
+              <label style={styles.label}>{lang.colDate}</label>
               <input
                 style={styles.input}
                 type="date"
@@ -99,42 +110,101 @@ export default function Tasks() {
               />
             </div>
             <div>
-              <label style={styles.label}>{t.priority}</label>
+              <label style={styles.label}>{lang.priority}</label>
               <select
                 style={styles.input}
                 value={form.priority}
                 onChange={(e) => setForm({ ...form, priority: e.target.value })}
               >
-                <option value="high">{t.high}</option>
-                <option value="medium">{t.medium}</option>
-                <option value="low">{t.low}</option>
+                <option value="high">{lang.high}</option>
+                <option value="medium">{lang.medium}</option>
+                <option value="low">{lang.low}</option>
               </select>
             </div>
+
             <div style={{ gridColumn: "span 2" }}>
-              <label style={styles.label}>{t.linkToDebt}</label>
+              <label style={styles.label}>{lang.linkToDebt}</label>
               <select
                 style={styles.input}
                 value={form.debtId}
                 onChange={(e) => setForm({ ...form, debtId: e.target.value })}
               >
-                <option value="">{t.noLink}</option>
+                <option value="">{lang.noLink} (Oddiy vazifa)</option>
                 {data.debts.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.contactName} — {d.amount} {d.currency}
                   </option>
                 ))}
               </select>
+
+              {!form.debtId ? (
+                <div style={styles.noDebtBox}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    <span style={{ fontSize: "11px", color: "#666" }}>
+                      {lang.todoType}
+                    </span>
+                    <button
+                      style={styles.quickAddLink}
+                      onClick={() => alert("Qarzlar bo'limiga o'ting")}
+                    >
+                      + Yangi qarzdor
+                    </button>
+                  </div>
+                  <div style={{ display: "flex", gap: "5px" }}>
+                    {["personal", "market", "meeting", "payment"].map((key) => (
+                      <button
+                        key={key}
+                        onClick={() =>
+                          setForm({
+                            ...form,
+                            title: `${lang[key]}: ${form.title}`,
+                          })
+                        }
+                        style={styles.miniTag}
+                      >
+                        {lang[key]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div style={styles.debtPreview}>
+                  <div
+                    style={{
+                      fontWeight: 600,
+                      color: colors.blue,
+                      fontSize: "13px",
+                    }}
+                  >
+                    🔗 {selectedDebt.contactName} bilan bog'landi
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#555" }}>
+                    Joriy qarz miqdori:{" "}
+                    <b>
+                      {selectedDebt.amount} {selectedDebt.currency}
+                    </b>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
+
           <div style={styles.formFooter}>
             <button
               style={styles.btnSecondary}
               onClick={() => setShowForm(false)}
             >
-              {t.cancel}
+              {lang.cancel}
             </button>
             <button style={styles.btnPrimary} onClick={handleSave}>
-              {t.save}
+              {lang.save}
             </button>
           </div>
         </div>
@@ -150,23 +220,25 @@ export default function Tasks() {
               ...(filter === f ? styles.filterActive : {}),
             }}
           >
-            {t[f]}
+            {lang[f]}
           </button>
         ))}
       </div>
 
       <div>
         {tasks.length === 0 ? (
-          <div style={styles.empty}>{t.noTasks}</div>
+          <div style={styles.empty}>{lang.noTasks}</div>
         ) : (
-          tasks.map((t) => {
-            const pri = priorityInfo(t.priority);
+          tasks.map((task) => {
+            const pri = priorityInfo(task.priority);
+            const taskDebt = data.debts.find((d) => d.id === task.debtId);
+
             return (
               <div
-                key={t.id}
+                key={task.id}
                 style={{
                   ...styles.taskCard,
-                  opacity: t.status === "done" ? 0.6 : 1,
+                  opacity: task.status === "done" ? 0.6 : 1,
                 }}
               >
                 <div style={styles.taskLeft}>
@@ -175,14 +247,14 @@ export default function Tasks() {
                       width: "8px",
                       height: "8px",
                       borderRadius: "50%",
-                      background: dotColor(t.priority),
+                      background: dotColor(task.priority),
                       flexShrink: 0,
                     }}
                   />
                   <input
                     type="checkbox"
-                    checked={t.status === "done"}
-                    onChange={() => toggleDone(t)}
+                    checked={task.status === "done"}
+                    onChange={() => toggleDone(task)}
                     style={{ cursor: "pointer" }}
                   />
                   <div>
@@ -191,11 +263,11 @@ export default function Tasks() {
                         fontSize: "14px",
                         fontWeight: 500,
                         textDecoration:
-                          t.status === "done" ? "line-through" : "none",
-                        color: t.status === "done" ? "#aaa" : "#333",
+                          task.status === "done" ? "line-through" : "none",
+                        color: task.status === "done" ? "#aaa" : "#333",
                       }}
                     >
-                      {t.title}
+                      {task.title}
                     </div>
                     <div
                       style={{
@@ -204,8 +276,13 @@ export default function Tasks() {
                         marginTop: "2px",
                       }}
                     >
-                      {t.colDate}:{t.deadline}
-                      {t.debtId && ` · ${t.linkedToDebt}`}
+                      {lang.colDate}: {task.deadline}
+                      {taskDebt && (
+                        <span style={{ color: colors.blue }}>
+                          {" "}
+                          · 🔗 {taskDebt.contactName}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -224,9 +301,9 @@ export default function Tasks() {
                   </span>
                   <button
                     style={styles.btnDanger}
-                    onClick={() => deleteItem("tasks", t.id)}
+                    onClick={() => deleteItem("tasks", task.id)}
                   >
-                    {t.delete || "O'chirish"}
+                    {lang.remove}
                   </button>
                 </div>
               </div>
@@ -250,8 +327,9 @@ const styles = {
     background: "white",
     borderRadius: "10px",
     padding: "1.25rem",
-    border: `1px solid ${colors.textColor}`,
+    border: `1px solid ${colors.textColor || "#eee"}`,
     marginBottom: "1rem",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
   },
   formTitle: { fontSize: "16px", fontWeight: 600, marginBottom: "1rem" },
   formGrid: {
@@ -264,7 +342,7 @@ const styles = {
   label: {
     fontSize: "12px",
     fontWeight: 500,
-    color: colors.textColor,
+    color: "#555",
     display: "block",
     marginBottom: "4px",
   },
@@ -272,9 +350,42 @@ const styles = {
     width: "100%",
     padding: "8px 10px",
     fontSize: "13px",
-    border: `1px solid ${colors.textColor}`,
+    border: `1px solid #ccc`,
     borderRadius: "6px",
     boxSizing: "border-box",
+  },
+  // Yangi qo'shilgan: Bog'lanmagan holat stili
+  noDebtBox: {
+    marginTop: "10px",
+    padding: "10px",
+    background: "#f9f9f9",
+    borderRadius: "6px",
+    border: "1px dashed #ddd",
+  },
+  quickAddLink: {
+    background: "none",
+    border: "none",
+    color: colors.primaryColor,
+    fontSize: "11px",
+    fontWeight: 600,
+    cursor: "pointer",
+    textDecoration: "underline",
+  },
+  miniTag: {
+    padding: "3px 8px",
+    fontSize: "10px",
+    background: "white",
+    border: "1px solid #ddd",
+    borderRadius: "4px",
+    cursor: "pointer",
+    color: "#666",
+  },
+  debtPreview: {
+    marginTop: "8px",
+    padding: "10px 12px",
+    background: "#f0f7ff",
+    borderRadius: "6px",
+    borderLeft: `4px solid ${colors.blue}`,
   },
   filterBar: {
     display: "flex",
@@ -285,7 +396,7 @@ const styles = {
   filterBtn: {
     padding: "5px 14px",
     fontSize: "12px",
-    border: `1px solid ${colors.textColor}`,
+    border: `1px solid #ccc`,
     borderRadius: "20px",
     cursor: "pointer",
     background: "white",
@@ -294,12 +405,13 @@ const styles = {
   filterActive: {
     background: colors.primaryColor,
     color: "white",
+    border: `1px solid ${colors.primaryColor}`,
   },
   taskCard: {
     background: "white",
     borderRadius: "10px",
     padding: "1rem 1.25rem",
-    border: `1px solid ${colors.textColor}`,
+    border: `1px solid #eee`,
     marginBottom: "8px",
     display: "flex",
     alignItems: "center",
@@ -342,6 +454,6 @@ const styles = {
     padding: "3rem",
     background: "white",
     borderRadius: "10px",
-    border: `1px solid ${colors.textColor}`,
+    border: `1px solid #eee`,
   },
 };

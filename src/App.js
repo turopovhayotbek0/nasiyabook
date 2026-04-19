@@ -1,12 +1,10 @@
 import React, { useState } from "react";
 import Navbar from "./components/Navbar";
 import Topbar from "./components/Topbar";
-import Dashboard from "./pages/Dashboard";
 import Contacts from "./pages/Contacts";
-import Debts from "./pages/Debts";
 import Tasks from "./pages/Tasks";
-import Payments from "./pages/Payments";
 import Reports from "./pages/Reports";
+import Finance from "./pages/Finance";
 
 export default function App() {
   const [page, setPage] = useState("contacts");
@@ -15,23 +13,14 @@ export default function App() {
     switch (page) {
       case "contacts":
         return <Contacts />;
-      case "debts":
-        return <Debts />;
-      case "payments":
-        return <Payments />;
+      case "finance":
+        return <Finance />;
       case "tasks":
         return <Tasks />;
-      case "dashboard":
-        return <Dashboard />;
       case "reports":
         return <Reports />;
-
       default:
-        return (
-          <div>
-            <h2>{page}</h2>
-          </div>
-        );
+        return <Contacts />;
     }
   }
 

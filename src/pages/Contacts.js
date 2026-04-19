@@ -57,13 +57,12 @@ export default function Contacts() {
   function handlePhoneChange(e) {
     let value = e.target.value.replace(/\D/g, "");
     if (!value.startsWith("998")) value = "998" + value;
-    const raw = value;
     let formatted = "+998 ";
     if (value.length > 3) formatted += value.slice(3, 5);
     if (value.length >= 6) formatted += " " + value.slice(5, 8);
     if (value.length >= 9) formatted += " " + value.slice(8, 10);
     if (value.length >= 11) formatted += " " + value.slice(10, 12);
-    setForm({ ...form, phone: formatted, phoneRaw: raw });
+    setForm({ ...form, phone: formatted });
   }
 
   return (
@@ -84,12 +83,10 @@ export default function Contacts() {
 
       {showForm && (
         <div style={styles.formCard}>
-          <h3 style={styles.formTitle}>
-            {editId ? t.editContact || "Kontaktni tahrirlash" : t.newContact}
-          </h3>
+          <h3 style={styles.formTitle}>{editId ? t.edit : t.newContact}</h3>
           <div className="form-grid" style={styles.formGrid}>
             <div>
-              <label style={styles.label}>{t.name}*</label>
+              <label style={styles.label}>{t.name} *</label>
               <input
                 style={styles.input}
                 value={form.name}
@@ -129,7 +126,7 @@ export default function Contacts() {
               {t.cancel}
             </button>
             <button style={styles.btnPrimary} onClick={handleSave}>
-              {editId ? t.save : t.save}
+              {t.save}
             </button>
           </div>
         </div>
@@ -140,7 +137,7 @@ export default function Contacts() {
           <p style={styles.empty}>{t.noContacts}</p>
         ) : (
           <>
-            {/* Desktop table */}
+            {/* Desktop */}
             <div className="desktop-only">
               <table style={styles.table}>
                 <thead>
@@ -186,7 +183,7 @@ export default function Contacts() {
               </table>
             </div>
 
-            {/* Mobile cards */}
+            {/* Mobile */}
             <div className="mobile-only">
               {data.contacts.map((c) => (
                 <div key={c.id} style={styles.mobileCard}>
@@ -207,7 +204,7 @@ export default function Contacts() {
                         style={styles.btnEdit}
                         onClick={() => handleEdit(c)}
                       >
-                        ✏️
+                        {t.edit}
                       </button>
                       <button
                         style={styles.btnDanger}
@@ -247,13 +244,13 @@ const styles = {
     background: "white",
     borderRadius: "10px",
     padding: "1.25rem",
-    border: `1px solid ${colors.textColor}`,
+    border: "1px solid #eee",
   },
   formCard: {
     background: "white",
     borderRadius: "10px",
     padding: "1.25rem",
-    border: `1px solid ${colors.textColor}`,
+    border: "1px solid #eee",
     marginBottom: "1rem",
   },
   formTitle: {
@@ -272,7 +269,7 @@ const styles = {
   label: {
     fontSize: "12px",
     fontWeight: 500,
-    color: colors.textColor,
+    color: "#555",
     display: "block",
     marginBottom: "4px",
   },
@@ -280,7 +277,7 @@ const styles = {
     width: "100%",
     padding: "8px 10px",
     fontSize: "13px",
-    border: `1px solid ${colors.textColor}`,
+    border: "1px solid #ccc",
     borderRadius: "6px",
     boxSizing: "border-box",
   },
@@ -289,14 +286,14 @@ const styles = {
     textAlign: "left",
     padding: "8px 12px",
     fontSize: "12px",
-    color: colors.textColor,
-    borderBottom: `1px solid ${colors.textColor}`,
+    color: "#888",
+    borderBottom: "1px solid #eee",
     fontWeight: 500,
   },
   td: {
     padding: "10px 12px",
     fontSize: "13px",
-    borderBottom: `1px solid ${colors.textColor}`,
+    borderBottom: "1px solid #f5f5f5",
   },
   contactRow: { display: "flex", alignItems: "center", gap: "10px" },
   avatar: {
@@ -311,6 +308,7 @@ const styles = {
     fontSize: "12px",
     fontWeight: 600,
     color: colors.primaryColor,
+    flexShrink: 0,
   },
   btnPrimary: {
     padding: "8px 16px",
@@ -326,7 +324,7 @@ const styles = {
     padding: "8px 16px",
     background: "white",
     color: "black",
-    border: `1px solid ${colors.textColor}`,
+    border: "1px solid #ddd",
     borderRadius: "6px",
     cursor: "pointer",
     fontSize: "13px",
@@ -349,16 +347,10 @@ const styles = {
     cursor: "pointer",
     fontSize: "12px",
   },
-  empty: {
-    color: colors.textColor,
-    fontSize: "14px",
-    textAlign: "center",
-    padding: "2rem",
-  },
   mobileCard: {
-    borderBottom: `1px solid ${colors.textColor}`,
-    padding: "12px",
-    marginBottom: "8px",
+    borderBottom: "1px solid #f0f0f0",
+    padding: "12px 0",
+    marginBottom: "4px",
   },
   mobileTop: {
     display: "flex",
@@ -370,8 +362,14 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     fontSize: "13px",
-    padding: "4px 0",
-    borderTop: `1px solid ${colors.textColor}`,
+    padding: "5px 0",
+    borderTop: "1px solid #f5f5f5",
   },
-  mobileLabel: { color: colors.iconColor, fontSize: "12px" },
+  mobileLabel: { color: "#888", fontSize: "12px" },
+  empty: {
+    color: "#888",
+    fontSize: "14px",
+    textAlign: "center",
+    padding: "2rem",
+  },
 };

@@ -1,13 +1,7 @@
 import React, { createContext, useContext, useState, useMemo } from "react";
 
 const AppContext = createContext();
-
-const initialData = {
-  contacts: [],
-  debts: [],
-  tasks: [],
-  payments: [],
-};
+const initialData = { contacts: [], debts: [], tasks: [], payments: [] };
 
 export function AppProvider({ children }) {
   const [data, setData] = useState(() => {
@@ -20,78 +14,73 @@ export function AppProvider({ children }) {
     localStorage.setItem("nasiyabook", JSON.stringify(newData));
   }
 
-  // --- Oylik Hisob-kitob Mantiqi ---
   const { monthlyIn, monthlyOut } = useMemo(() => {
     const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-
+    const cm = now.getMonth(),
+      cy = now.getFullYear();
     const mIn = data.payments
       .filter((p) => {
-        const pDate = new Date(p.date);
-        const debt = data.debts.find((d) => d.id === p.debtId);
+        const d = new Date(p.date);
+        const debt = data.debts.find((x) => x.id === p.debtId);
         return (
-          pDate.getMonth() === currentMonth &&
-          pDate.getFullYear() === currentYear &&
+          d.getMonth() === cm &&
+          d.getFullYear() === cy &&
           debt?.type === "given"
         );
       })
       .reduce((s, p) => s + Number(p.amount), 0);
-
     const mOut = data.payments
       .filter((p) => {
-        const pDate = new Date(p.date);
-        const debt = data.debts.find((d) => d.id === p.debtId);
+        const d = new Date(p.date);
+        const isCurrentMonth = d.getMonth() === cm && d.getFullYear() === cy;
+        const debt = data.debts.find((x) => x.id === p.debtId);
         return (
-          pDate.getMonth() === currentMonth &&
-          pDate.getFullYear() === currentYear &&
-          debt?.type === "taken"
+          isCurrentMonth &&
+          (debt?.type === "taken" || p.type === "daily_payment")
         );
       })
       .reduce((s, p) => s + Number(p.amount), 0);
-
     return { monthlyIn: mIn, monthlyOut: mOut };
   }, [data]);
 
   function addContact(contact) {
-    const newContact = { ...contact, id: Date.now().toString() };
-    save({ ...data, contacts: [...data.contacts, newContact] });
+    save({
+      ...data,
+      contacts: [...data.contacts, { ...contact, id: Date.now().toString() }],
+    });
   }
-
   function addDebt(debt) {
-    const newDebt = { ...debt, id: Date.now().toString() };
-    save({ ...data, debts: [...data.debts, newDebt] });
+    save({
+      ...data,
+      debts: [...data.debts, { ...debt, id: Date.now().toString() }],
+    });
   }
-
   function addTask(task) {
-    const newTask = { ...task, id: Date.now().toString() };
-    save({ ...data, tasks: [...data.tasks, newTask] });
+    save({
+      ...data,
+      tasks: [...data.tasks, { ...task, id: Date.now().toString() }],
+    });
   }
 
   function addPayment(payment) {
     const newPayment = { ...payment, id: Date.now().toString() };
     const newPayments = [...data.payments, newPayment];
-
     const totalPaid = newPayments
       .filter((p) => p.debtId === payment.debtId)
-      .reduce((sum, p) => sum + Number(p.amount), 0);
-
+      .reduce((s, p) => s + Number(p.amount), 0);
     const debt = data.debts.find((d) => d.id === payment.debtId);
     let newDebts = data.debts;
-
     if (debt && totalPaid >= Number(debt.amount)) {
       newDebts = data.debts.map((d) =>
         d.id === payment.debtId ? { ...d, status: "closed" } : d,
       );
     }
-
     save({ ...data, debts: newDebts, payments: newPayments });
   }
 
   function deleteItem(type, id) {
     save({ ...data, [type]: data[type].filter((item) => item.id !== id) });
   }
-
   function updateItem(type, id, updated) {
     save({
       ...data,
@@ -105,7 +94,7 @@ export function AppProvider({ children }) {
     <AppContext.Provider
       value={{
         data,
-        monthlyIn, 
+        monthlyIn,
         monthlyOut,
         addContact,
         addDebt,

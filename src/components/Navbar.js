@@ -8,10 +8,12 @@ export default function Navbar({ current, onChange }) {
 
   const pages = [
     { id: "contacts", label: t.contacts, icon: "fa-solid fa-user-group" },
-    // { id: "debts", label: t.debts, icon: "fa-solid fa-hand-holding-dollar" },
-    // { id: "payments", label: t.payments, icon: "fa-solid fa-money-bill-wave" },
+    {
+      id: "finance",
+      label: t.finance,
+      icon: "fa-solid fa-hand-holding-dollar",
+    },
     { id: "tasks", label: t.tasks, icon: "fa-solid fa-list-check" },
-    // { id: "dashboard", label: t.dashboard, icon: "fa-solid fa-chart-column" },
     { id: "reports", label: t.reports, icon: "fa-solid fa-chart-pie" },
   ];
 
@@ -37,13 +39,13 @@ export default function Navbar({ current, onChange }) {
           <span style={styles.icon}>
             <i className={p.icon}></i>
           </span>
-          {p.label}{" "}
-          {/* Endi bu yerdagi p.label t dan kelayotgan tarjima bo'ladi */}
+          {p.label}
         </div>
       ))}
     </div>
   );
 }
+
 const styles = {
   sidebar: {
     width: "220px",
@@ -67,12 +69,7 @@ const styles = {
     fontWeight: "bold",
     gap: "10px",
   },
-  logoText: { fontSize: "18px", fontWeight: "700", color: "#fff" },
-  logoSub: {
-    fontSize: "12px",
-    color: "white",
-    marginTop: "2px",
-  },
+  logoSub: { fontSize: "12px", color: "white", marginTop: "2px" },
   navItem: {
     display: "flex",
     alignItems: "center",

@@ -6,36 +6,26 @@ import { useLang } from "../context/LangContext";
 export default function Reports() {
   const { data, monthlyIn, monthlyOut } = useApp();
   const { t } = useLang();
-
-  // Raqamlarni o'zbek formatida chiqarish (1 000 000)
   const fmt = (n) => new Intl.NumberFormat("uz-UZ").format(n);
 
-  // Qolgan qarzni hisoblash
-  const getRemaining = (debt) => {
+  function getRemaining(debt) {
     const paid = data.payments
       .filter((p) => p.debtId === debt.id)
       .reduce((s, p) => s + Number(p.amount), 0);
     return Math.max(0, Number(debt.amount) - paid);
-  };
+  }
 
-  // Qarz statusini aniqlash
-  const getStatus = (debt) => {
+  function getStatus(debt) {
     const today = new Date().toISOString().split("T")[0];
     if (getRemaining(debt) === 0) return "closed";
     if (debt.dueDate && debt.dueDate < today) return "overdue";
     return "active";
-  };
+  }
 
-  // Umumiy hisob-kitoblar
-  const totalGiven = data.debts
-    .filter((d) => d.type === "given")
-    .reduce((s, d) => s + Number(d.amount), 0);
-  const totalTaken = data.debts
-    .filter((d) => d.type === "taken")
-    .reduce((s, d) => s + Number(d.amount), 0);
-  const totalPaid = data.payments.reduce((s, p) => s + Number(p.amount), 0);
+  const totalDaily = data.payments
+    .filter((p) => p.type === "daily_payment")
+    .reduce((s, p) => s + Number(p.amount), 0);
 
-  // Status bo'yicha sonlar
   const activeCount = data.debts.filter(
     (d) => getStatus(d) === "active",
   ).length;
@@ -46,7 +36,6 @@ export default function Reports() {
     (d) => getStatus(d) === "closed",
   ).length;
 
-  // Eng ko'p qarzdorlar (Top 5)
   const byContact = {};
   data.debts
     .filter((d) => d.type === "given")
@@ -57,18 +46,21 @@ export default function Reports() {
   const topDebtors = Object.entries(byContact)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
+  const recentPayments = [...data.payments]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 10);
+  const overdueDebts = data.debts.filter((d) => getStatus(d) === "overdue");
 
-  // CSV Eksport funksiyasi
-  const exportCSV = () => {
+  function exportCSV() {
     const rows = [
       [
-        t.colName,
-        t.colType,
-        t.colAmount,
+        t.colPerson,
+        t.debtType,
+        t.amount,
         t.colRemaining,
-        t.colDate,
-        t.colDueDate,
-        t.colStatus,
+        t.givenDate,
+        t.returnDate,
+        "Status",
       ],
       ...data.debts.map((d) => [
         d.contactName,
@@ -81,17 +73,14 @@ export default function Reports() {
       ]),
     ];
     const csv = rows.map((r) => r.join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
+    a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
     a.download = `hisobot_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
-  };
+  }
 
   return (
-    <div style={styles.container}>
-      {/* Sarlavha qismi */}
+    <div>
       <div style={styles.header}>
         <h2 style={styles.title}>{t.reports}</h2>
         <button style={styles.btnPrimary} onClick={exportCSV}>
@@ -99,8 +88,7 @@ export default function Reports() {
         </button>
       </div>
 
-      {/* 1-QATOR: Oylik Kirim va Chiqim (Emoji olib tashlandi) */}
-      <div style={styles.monthlyGrid}>
+      <div style={styles.grid2}>
         <div
           style={{
             ...styles.metricCard,
@@ -111,53 +99,49 @@ export default function Reports() {
           <div style={{ ...styles.value, color: colors.primaryColor }}>
             +{fmt(monthlyIn)}
           </div>
-          <div style={styles.sub}>{t.currencyName} (Joriy oy)</div>
+          <div style={styles.sub}>{t.currencyName}</div>
         </div>
-        <div
-          style={{
-            ...styles.metricCard,
-            borderLeft: `6px solid ${colors.redhead}`,
-          }}
-        >
+        <div style={{ ...styles.metricCard, borderLeft: `6px solid #c0392b` }}>
           <div style={styles.label}>{t.monthlyOut || "Oylik Chiqim"}</div>
-          <div style={{ ...styles.value, color: colors.redhead }}>
+          <div style={{ ...styles.value, color: "#c0392b" }}>
             -{fmt(monthlyOut)}
           </div>
-          <div style={styles.sub}>{t.currencyName} (Joriy oy)</div>
+          <div style={styles.sub}>{t.currencyName}</div>
         </div>
       </div>
 
-      {/* 2-QATOR: Umumiy statistika */}
       <div style={styles.grid4}>
-        <div style={styles.metricCard}>
-          <div style={styles.label}>{t.totalGiven}</div>
-          <div style={{ ...styles.value, color: colors.blue }}>
-            {fmt(totalGiven)}
-          </div>
-          <div style={styles.sub}>{t.currencyName}</div>
-        </div>
-        <div style={styles.metricCard}>
-          <div style={styles.label}>{t.totalTaken}</div>
-          <div style={{ ...styles.value, color: colors.redhead }}>
-            {fmt(totalTaken)}
-          </div>
-          <div style={styles.sub}>{t.currencyName}</div>
-        </div>
-        <div style={styles.metricCard}>
-          <div style={styles.label}>{t.totalPaid}</div>
-          <div style={{ ...styles.value, color: colors.primaryColor }}>
-            {fmt(totalPaid)}
-          </div>
-          <div style={styles.sub}>{t.currencyName}</div>
-        </div>
         <div style={styles.metricCard}>
           <div style={styles.label}>{t.contactsCount}</div>
           <div style={styles.value}>{data.contacts.length}</div>
           <div style={styles.sub}>{t.peopleCount}</div>
         </div>
+        <div style={styles.metricCard}>
+          <div style={styles.label}>{t.dailyPayment || "Kundalik chiqim"}</div>
+          <div style={{ ...styles.value, color: colors.blue }}>
+            {fmt(totalDaily)}
+          </div>
+          <div style={styles.sub}>{t.currencyName}</div>
+        </div>
+        <div style={styles.metricCard}>
+          <div style={styles.label}>Qarzdorlar soni</div>
+          <div style={{ ...styles.value, color: "#c0392b" }}>
+            {overdueCount + activeCount}
+          </div>
+          <div style={styles.sub}>{t.peopleCount}</div>
+        </div>
+        <div style={styles.metricCard}>
+          <div style={styles.label}>{t.numberPayments || "To'lovlar soni"}</div>
+          <div style={{ ...styles.value, color: colors.blue }}>
+            {data.payments.length}
+          </div>
+          <div style={styles.sub}>
+            {t.unit}
+            {t.payment}
+          </div>
+        </div>
       </div>
 
-      {/* 3-QATOR: Qarz holati va Eng ko'p qarzdorlar */}
       <div style={styles.grid2}>
         <div style={styles.card}>
           <div style={styles.cardTitle}>{t.debtStatus}</div>
@@ -169,7 +153,7 @@ export default function Reports() {
           </div>
           <div style={styles.statRow}>
             <span>{t.overdue}</span>
-            <span style={{ color: colors.redhead, fontWeight: 600 }}>
+            <span style={{ color: "#c0392b", fontWeight: 600 }}>
               {overdueCount} ta
             </span>
           </div>
@@ -180,7 +164,6 @@ export default function Reports() {
             </span>
           </div>
         </div>
-
         <div style={styles.card}>
           <div style={styles.cardTitle}>{t.topDebtors}</div>
           {topDebtors.length === 0 ? (
@@ -197,12 +180,90 @@ export default function Reports() {
           )}
         </div>
       </div>
+
+      {overdueDebts.length > 0 && (
+        <div style={styles.card}>
+          <div style={styles.cardTitle}>Kechikkan qarzlar</div>
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>{t.colPerson}</th>
+                <th style={styles.th}>{t.amount}</th>
+                <th style={styles.th}>{t.returnDate}</th>
+                <th style={styles.th}>{t.colRemaining}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {overdueDebts.map((d) => (
+                <tr key={d.id}>
+                  <td style={styles.td}>{d.contactName}</td>
+                  <td style={styles.td}>
+                    {fmt(d.amount)} {d.currency}
+                  </td>
+                  <td style={{ ...styles.td, color: "#c0392b" }}>
+                    {d.dueDate}
+                  </td>
+                  <td
+                    style={{ ...styles.td, fontWeight: 600, color: "#c0392b" }}
+                  >
+                    {fmt(getRemaining(d))} {d.currency}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div style={styles.card}>
+        <div style={styles.cardTitle}>Oxirgi to'lovlar</div>
+        {recentPayments.length === 0 ? (
+          <p style={styles.empty}>{t.noPayments}</p>
+        ) : (
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>{t.colDate}</th>
+                <th style={styles.th}>{t.colPerson}</th>
+                <th style={styles.th}>{t.amountPaid}</th>
+                <th style={styles.th}>{t.note}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentPayments.map((p) => (
+                <tr key={p.id}>
+                  <td style={styles.td}>{p.date}</td>
+                  <td style={styles.td}>
+                    {p.type === "daily_payment" ? (
+                      <i>{p.contactName}</i>
+                    ) : (
+                      p.contactName
+                    )}
+                  </td>
+                  <td
+                    style={{
+                      ...styles.td,
+                      fontWeight: 600,
+                      color:
+                        p.type === "daily_payment"
+                          ? colors.blue
+                          : colors.primaryColor,
+                    }}
+                  >
+                    {fmt(p.amount)} {p.currency}
+                  </td>
+                  <td style={styles.td}>{p.note || "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 }
 
 const styles = {
-  container: { paddingBottom: "20px" },
   header: {
     display: "flex",
     justifyContent: "space-between",
@@ -210,9 +271,9 @@ const styles = {
     marginBottom: "1.5rem",
   },
   title: { fontSize: "22px", fontWeight: 600 },
-  monthlyGrid: {
+  grid2: {
     display: "grid",
-    gridTemplateColumns: "1fr 1fr",
+    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
     gap: "1rem",
     marginBottom: "1rem",
   },
@@ -220,12 +281,7 @@ const styles = {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
     gap: "1rem",
-    marginBottom: "1.5rem",
-  },
-  grid2: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-    gap: "1rem",
+    marginBottom: "1rem",
   },
   metricCard: {
     background: "white",
@@ -235,9 +291,9 @@ const styles = {
     border: "1px solid #eee",
   },
   label: {
-    fontSize: "14px",
+    fontSize: "13px",
     color: "#666",
-    fontWeight: "500",
+    fontWeight: 500,
     marginBottom: "8px",
   },
   value: { fontSize: "22px", fontWeight: 700 },
@@ -247,6 +303,7 @@ const styles = {
     borderRadius: "12px",
     padding: "1.25rem",
     border: "1px solid #eee",
+    marginBottom: "1rem",
   },
   cardTitle: {
     fontSize: "15px",
@@ -260,6 +317,20 @@ const styles = {
     padding: "10px 0",
     borderBottom: "1px solid #f9f9f9",
     fontSize: "14px",
+  },
+  table: { width: "100%", borderCollapse: "collapse" },
+  th: {
+    textAlign: "left",
+    padding: "8px 12px",
+    fontSize: "12px",
+    color: "#888",
+    borderBottom: "1px solid #eee",
+    fontWeight: 500,
+  },
+  td: {
+    padding: "8px 12px",
+    fontSize: "13px",
+    borderBottom: "1px solid #f5f5f5",
   },
   btnPrimary: {
     padding: "8px 16px",

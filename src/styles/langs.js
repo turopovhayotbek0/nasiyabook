@@ -1,10 +1,15 @@
 export const langs = {
   uz: {
+    finance: "Moliya",
+    debtPayment: "Qarz bo'yicha to'lov",
+    monthlyIn: "Oylik Kirim",
+    monthlyOut: "Oylik Chiqim",
+    newDebtor: "Yangi qarzdor",
     personalCRM: "Shaxsiy CRM",
     dashboard: "Dashboard - qarzlar",
     contacts: "Kontaktlar",
     debts: "Qarzlar",
-    tasks: "To-do list",
+    tasks: "Vazifalar",
     payments: "To'lovlar",
     reports: "Hisobotlar",
     search: "Ism, telefon, qarz bo'yicha qidirish...",
@@ -21,8 +26,7 @@ export const langs = {
     peopleCount: "ta odam",
     currency: "so'm",
     currencyName: "so'm",
-
-    addContact: "+ Kontakt qo'shish",
+    addContact: "Kontakt qo'shish",
     newContact: "Yangi kontakt",
     name: "Ism",
     phone: "Telefon",
@@ -30,8 +34,7 @@ export const langs = {
     nameRequired: "Ism kiriting",
     noContacts: "Hali kontakt yo'q. Birinchisini qo'shing!",
     contactsCount: "Kontaktlar",
-
-    addDebt: "+ Qarz qo'shish",
+    addDebt: "Qarz qo'shish",
     newDebt: "Yangi qarz",
     selectContact: "Kontakt tanlang...",
     debtType: "Turi",
@@ -57,7 +60,6 @@ export const langs = {
     noDebts: "Qarz yo'q",
     debtStatus: "Qarz holati",
     topDebtors: "Eng ko'p qarz bo'lganlar",
-
     addPayment: "To'lov qo'shish",
     newPayment: "Yangi to'lov",
     dailyPayment: "Kundalik to'lov",
@@ -85,8 +87,7 @@ export const langs = {
     totalPaid: "Jami to'langan",
     totalGiven: "Jami berilgan",
     totalTaken: "Jami olingan",
-
-    addTask: "+ Vazifa qo'shish",
+    addTask: "Vazifa qo'shish",
     newTask: "Yangi vazifa",
     taskTitle: "Vazifa nomi",
     priority: "Muhimlik",
@@ -107,10 +108,15 @@ export const langs = {
     market: "Bozor",
     meeting: "Uchrashuv",
     payment: "To'lov",
-
+    numberPayments: "To'lovlar soni",
     csvExport: "CSV Eksport",
   },
   ru: {
+    finance: "Финансы",
+    debtPayment: "Выплата по долгу",
+    monthlyIn: "Месячный доход",
+    monthlyOut: "Месячный расход",
+    newDebtor: "Hовый должник",
     personalCRM: "Персональная CRM",
     dashboard: "Главная - долги",
     contacts: "Контакты",
@@ -132,8 +138,7 @@ export const langs = {
     peopleCount: "чел.",
     currency: "сум",
     currencyName: "сум",
-
-    addContact: "+ Добавить контакт",
+    addContact: "Добавить контакт",
     newContact: "Новый контакт",
     name: "Имя",
     phone: "Телефон",
@@ -141,8 +146,7 @@ export const langs = {
     nameRequired: "Введите имя",
     noContacts: "Контактов пока нет. Добавьте первый!",
     contactsCount: "Контакты",
-
-    addDebt: "+ Добавить долг",
+    addDebt: "Добавить долг",
     newDebt: "Новый долг",
     selectContact: "Выберите контакт...",
     debtType: "Тип",
@@ -168,7 +172,6 @@ export const langs = {
     noDebts: "Нет долгов",
     debtStatus: "Статус долгов",
     topDebtors: "Топ должников",
-
     addPayment: "Добавить платеж",
     newPayment: "Новый платеж",
     dailyPayment: "Ежедневный платеж",
@@ -182,7 +185,7 @@ export const langs = {
     left: "осталось",
     amountPaid: "Оплаченная сумма",
     colDate: "Дата",
-    colPerson: "Лицо",
+    colPerson: "Человек",
     colAmount: "Сумма",
     colDueDate: "Срок",
     colRemaining: "Остаток",
@@ -196,8 +199,7 @@ export const langs = {
     totalPaid: "Всего оплачено",
     totalGiven: "Всего дано",
     totalTaken: "Всего взято",
-
-    addTask: "+ Добавить задачу",
+    addTask: "Добавить задачу",
     newTask: "Новая задача",
     taskTitle: "Название задачи",
     priority: "Приоритет",
@@ -218,10 +220,15 @@ export const langs = {
     market: "Рынок",
     meeting: "Встреча",
     payment: "Оплата",
-
+    numberPayments: "Количество платежей",
     csvExport: "Экспорт CSV",
   },
   en: {
+    finance: "Finance",
+    debtPayment: "Debt payment",
+    monthlyIn: "Monthly Income",
+    monthlyOut: "Monthly Expense",
+    newDebtor: "New Debtor",
     personalCRM: "Personal CRM",
     dashboard: "Dashboard - debts",
     contacts: "Contacts",
@@ -243,8 +250,7 @@ export const langs = {
     peopleCount: "people",
     currency: "UZS",
     currencyName: "sum",
-
-    addContact: "+ Add Contact",
+    addContact: "Add Contact",
     newContact: "New Contact",
     name: "Name",
     phone: "Phone",
@@ -252,8 +258,7 @@ export const langs = {
     nameRequired: "Enter a name",
     noContacts: "No contacts yet. Add the first one!",
     contactsCount: "Contacts",
-
-    addDebt: "+ Add Debt",
+    addDebt: "Add Debt",
     newDebt: "New Debt",
     selectContact: "Select contact...",
     debtType: "Type",
@@ -279,7 +284,6 @@ export const langs = {
     noDebts: "No debts",
     debtStatus: "Debt Status",
     topDebtors: "Top Debtors",
-
     addPayment: "Add Payment",
     newPayment: "New Payment",
     dailyPayment: "Daily Payment",
@@ -307,8 +311,7 @@ export const langs = {
     totalPaid: "Total Paid",
     totalGiven: "Total Given",
     totalTaken: "Total Taken",
-
-    addTask: "+ Add Task",
+    addTask: "Add Task",
     newTask: "New Task",
     taskTitle: "Task Title",
     priority: "Priority",
@@ -329,7 +332,7 @@ export const langs = {
     market: "Market",
     meeting: "Meeting",
     payment: "Payment",
-
+    numberPayments: "Number of Payments",
     csvExport: "CSV Export",
   },
 };

@@ -79,7 +79,15 @@ body {
     grid-template-columns: 1fr !important;
   }
   .form-grid {
-    grid-template-columns: 1fr !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    justify-content: center !important;
+  }
+
+  .form-grid div {
+    width: 100% !important;
   }
   .search-wrap {
     width: 100% !important;
@@ -96,5 +104,20 @@ body {
   }
   .mobile-only {
     display: block;
+  }
+}
+
+@media (max-width: 768px) {
+  .task-card {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+  .task-right {
+    width: 100%;
+    justify-content: flex-end !important;
+  }
+  .task-left {
+    width: 100%;
   }
 }
